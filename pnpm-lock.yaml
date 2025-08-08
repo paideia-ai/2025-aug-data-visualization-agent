@@ -10,10 +10,10 @@ importers:
     dependencies:
       '@ai-sdk/anthropic':
         specifier: ^2.0.1
-        version: 2.0.1(zod@3.25.76)
+        version: 2.0.1(zod@4.0.15)
       '@ai-sdk/react':
         specifier: ^2.0.8
-        version: 2.0.8(react@19.0.0-rc.1)(zod@3.25.76)
+        version: 2.0.8(react@19.0.0-rc.1)(zod@4.0.15)
       '@observablehq/plot':
         specifier: ^0.6.17
         version: 0.6.17
@@ -22,7 +22,7 @@ importers:
         version: 5.0.0(vite@7.1.1)
       ai:
         specifier: ^5.0.8
-        version: 5.0.8(zod@3.25.76)
+        version: 5.0.8(zod@4.0.15)
       arquero:
         specifier: ^8.0.3
         version: 8.0.3
@@ -41,6 +41,9 @@ importers:
       react-dom:
         specifier: 19.0.0-rc.1
         version: 19.0.0-rc.1(react@19.0.0-rc.1)
+      zod:
+        specifier: ^4.0.15
+        version: 4.0.15
     devDependencies:
       vite:
         specifier: ^7.1.0
@@ -1098,44 +1101,44 @@ packages:
     peerDependencies:
       zod: ^3.24.1
 
-  zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+  zod@4.0.15:
+    resolution: {integrity: sha512-2IVHb9h4Mt6+UXkyMs0XbfICUh1eUrlJJAOupBHUhLRnKkruawyDddYRCs0Eizt900ntIMk9/4RksYl+FgSpcQ==}
 
 snapshots:
 
-  '@ai-sdk/anthropic@2.0.1(zod@3.25.76)':
+  '@ai-sdk/anthropic@2.0.1(zod@4.0.15)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.1(zod@3.25.76)
-      zod: 3.25.76
+      '@ai-sdk/provider-utils': 3.0.1(zod@4.0.15)
+      zod: 4.0.15
 
-  '@ai-sdk/gateway@1.0.4(zod@3.25.76)':
+  '@ai-sdk/gateway@1.0.4(zod@4.0.15)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.1(zod@3.25.76)
-      zod: 3.25.76
+      '@ai-sdk/provider-utils': 3.0.1(zod@4.0.15)
+      zod: 4.0.15
 
-  '@ai-sdk/provider-utils@3.0.1(zod@3.25.76)':
+  '@ai-sdk/provider-utils@3.0.1(zod@4.0.15)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@standard-schema/spec': 1.0.0
       eventsource-parser: 3.0.3
-      zod: 3.25.76
-      zod-to-json-schema: 3.24.6(zod@3.25.76)
+      zod: 4.0.15
+      zod-to-json-schema: 3.24.6(zod@4.0.15)
 
   '@ai-sdk/provider@2.0.0':
     dependencies:
       json-schema: 0.4.0
 
-  '@ai-sdk/react@2.0.8(react@19.0.0-rc.1)(zod@3.25.76)':
+  '@ai-sdk/react@2.0.8(react@19.0.0-rc.1)(zod@4.0.15)':
     dependencies:
-      '@ai-sdk/provider-utils': 3.0.1(zod@3.25.76)
-      ai: 5.0.8(zod@3.25.76)
+      '@ai-sdk/provider-utils': 3.0.1(zod@4.0.15)
+      ai: 5.0.8(zod@4.0.15)
       react: 19.0.0-rc.1
       swr: 2.3.4(react@19.0.0-rc.1)
       throttleit: 2.1.0
     optionalDependencies:
-      zod: 3.25.76
+      zod: 4.0.15
 
   '@ampproject/remapping@2.3.0':
     dependencies:
@@ -1462,13 +1465,13 @@ snapshots:
 
   acorn@8.15.0: {}
 
-  ai@5.0.8(zod@3.25.76):
+  ai@5.0.8(zod@4.0.15):
     dependencies:
-      '@ai-sdk/gateway': 1.0.4(zod@3.25.76)
+      '@ai-sdk/gateway': 1.0.4(zod@4.0.15)
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.1(zod@3.25.76)
+      '@ai-sdk/provider-utils': 3.0.1(zod@4.0.15)
       '@opentelemetry/api': 1.9.0
-      zod: 3.25.76
+      zod: 4.0.15
 
   arquero@8.0.3:
     dependencies:
@@ -2106,8 +2109,8 @@ snapshots:
 
   yallist@3.1.1: {}
 
-  zod-to-json-schema@3.24.6(zod@3.25.76):
+  zod-to-json-schema@3.24.6(zod@4.0.15):
     dependencies:
-      zod: 3.25.76
+      zod: 4.0.15
 
-  zod@3.25.76: {}
+  zod@4.0.15: {}

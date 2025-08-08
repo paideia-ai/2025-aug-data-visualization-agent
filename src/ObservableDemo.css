@@ -1,60 +1,38 @@
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: #213547;
-  background-color: #ffffff;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  min-height: 100vh;
+.observable-demo {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-#app {
-  max-width: 1400px;
-  margin: 0 auto;
+  min-height: calc(100vh - 60px);
   padding: 2rem;
+  color: #213547;
 }
 
-header {
+.observable-demo header {
   text-align: center;
   color: white;
   margin-bottom: 3rem;
 }
 
-header h1 {
+.observable-demo header h1 {
   font-size: 3rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
 }
 
-header p {
+.observable-demo header p {
   font-size: 1.2rem;
   opacity: 0.9;
 }
 
-main {
+.observable-demo main {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
   gap: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-.chart-section, .stats-section {
+.observable-demo .chart-section, 
+.observable-demo .stats-section {
   background: white;
   border-radius: 12px;
   padding: 1.5rem;
@@ -62,12 +40,14 @@ main {
   transition: transform 0.3s ease;
 }
 
-.chart-section:hover, .stats-section:hover {
+.observable-demo .chart-section:hover, 
+.observable-demo .stats-section:hover {
   transform: translateY(-5px);
   box-shadow: 0 15px 40px rgba(0,0,0,0.15);
 }
 
-.chart-section h2, .stats-section h2 {
+.observable-demo .chart-section h2, 
+.observable-demo .stats-section h2 {
   font-size: 1.5rem;
   margin-bottom: 1rem;
   color: #333;
@@ -75,44 +55,46 @@ main {
   padding-bottom: 0.5rem;
 }
 
-.chart-section > div, .stats-section > div {
+.observable-demo .chart-section > div, 
+.observable-demo .stats-section > div {
   min-height: 300px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-#stats-table {
+.observable-demo #stats-table {
   overflow-x: auto;
 }
 
-table {
+.observable-demo table {
   width: 100%;
   border-collapse: collapse;
 }
 
-th, td {
+.observable-demo th, 
+.observable-demo td {
   padding: 0.75rem;
   text-align: left;
   border-bottom: 1px solid #e2e8f0;
 }
 
-th {
+.observable-demo th {
   background-color: #667eea;
   color: white;
   font-weight: 600;
 }
 
-tr:hover {
+.observable-demo tr:hover {
   background-color: #f7fafc;
 }
 
 @media (max-width: 768px) {
-  main {
+  .observable-demo main {
     grid-template-columns: 1fr;
   }
   
-  header h1 {
+  .observable-demo header h1 {
     font-size: 2rem;
   }
 }

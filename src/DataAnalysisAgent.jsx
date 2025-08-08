@@ -355,61 +355,137 @@ function DataAnalysisAgent() {
       console.log(`📝 Defining node: ${name} with inputs:`, inputs)
       console.log(`  Code preview:`, code.substring(0, 100) + '...')
       
-      // Delete existing node if it exists
-      if (nodes.has(name)) {
+      // Check if node already exists
+      const nodeExists = nodes.has(name)
+      
+      // Delete existing node if it exists (for redefine)
+      if (nodeExists) {
+        console.log(`  Node ${name} already exists, will redefine`)
         nodes.get(name).variable.delete()
       }
       
-      // Create observer for the node
-      const nodeObserver = {
-        pending() {},
-        fulfilled(value) { console.log(`Node ${name} computed:`, typeof value) },
-        rejected(error) { console.error(`Node ${name} error:`, error) }
-      }
+      // Create a promise to wait for the node result
+      let nodeResult = null
+      let nodeError = null
+      let computeComplete = false
       
-      // Create the node definition function with observer
-      const variable = mainModule.variable(nodeObserver).define(name, inputs, function(...inputValues) {
-        // Get all data query methods from nodes
-        const queryMethods = {}
-        for (const [nodeName, node] of nodes) {
-          if (node.variable?._value && typeof node.variable._value === 'function') {
-            queryMethods[nodeName] = node.variable._value
+      const resultPromise = new Promise((resolve) => {
+        // Create observer for the node
+        const nodeObserver = {
+          pending() { console.log(`  Node ${name} is computing...`) },
+          fulfilled(value) { 
+            console.log(`  Node ${name} computed:`, typeof value)
+            nodeResult = value
+            computeComplete = true
+            resolve()
+          },
+          rejected(error) { 
+            console.error(`  Node ${name} error:`, error)
+            nodeError = error
+            computeComplete = true
+            resolve()
           }
         }
         
-        // Create a context with all available libraries and input values
-        const context = {
-          Plot,
-          aq,
-          d3: { csv: () => {} },
-          Library,
-          ...queryMethods
-        }
-        
-        // Add input values
-        inputs.forEach((inputName, index) => {
-          context[inputName] = inputValues[index]
+        // Create the node definition function with observer
+        // Use define() for new nodes, redefine() would be done by deleting and defining
+        const variable = mainModule.variable(nodeObserver).define(name, inputs, function(...inputValues) {
+          // Get all data query methods from nodes
+          const queryMethods = {}
+          for (const [nodeName, node] of nodes) {
+            if (node.variable?._value && typeof node.variable._value === 'function') {
+              queryMethods[nodeName] = node.variable._value
+            }
+          }
+          
+          // Create a context with all available libraries and input values
+          const context = {
+            Plot,
+            aq,
+            d3: { csv: () => {} },
+            Library,
+            ...queryMethods
+          }
+          
+          // Add input values
+          inputs.forEach((inputName, index) => {
+            context[inputName] = inputValues[index]
+          })
+          
+          // Execute the code with the context
+          const func = new Function(...Object.keys(context), code)
+          return func(...Object.values(context))
         })
         
-        // Execute the code with the context
-        const func = new Function(...Object.keys(context), code)
-        return func(...Object.values(context))
-      })
-      
-      nodes.set(name, {
-        type: 'data',
-        variable,
-        inputs
+        nodes.set(name, {
+          type: 'data',
+          variable,
+          inputs
+        })
       })
       
       // Force computation of the new node
       await runtime._compute()
       
-      console.log(`  Node ${name} defined successfully`)
-      return { nodeId: name, status: 'success' }
+      // Wait for the observer to report the result (with timeout)
+      await Promise.race([
+        resultPromise,
+        new Promise(resolve => setTimeout(resolve, 2000)) // 2 second timeout
+      ])
+      
+      // Prepare the response
+      if (nodeError) {
+        console.log(`  Node ${name} failed with error`)
+        return { 
+          nodeId: name, 
+          status: 'error', 
+          error: nodeError.toString(),
+          wasRedefined: nodeExists
+        }
+      } else if (nodeResult !== undefined) {
+        // Create a preview of the value
+        let preview = null
+        try {
+          if (typeof nodeResult === 'function') {
+            preview = `[Function: ${nodeResult.toString().substring(0, 100)}...]`
+          } else if (nodeResult?.tagName) {
+            preview = `[DOM Element: ${nodeResult.tagName}]`
+          } else if (nodeResult?._names) {
+            // Arquero table
+            preview = `[Arquero Table: ${nodeResult._nrows} rows, columns: ${nodeResult._names.join(', ')}]`
+          } else {
+            const stringified = JSON.stringify(nodeResult)
+            preview = stringified.length > 200 ? stringified.substring(0, 200) + '...' : stringified
+          }
+        } catch (e) {
+          preview = `[Value of type ${typeof nodeResult}]`
+        }
+        
+        console.log(`  Node ${name} defined successfully with value preview:`, preview)
+        return { 
+          nodeId: name, 
+          status: 'success',
+          valueType: typeof nodeResult,
+          preview,
+          wasRedefined: nodeExists
+        }
+      } else {
+        // No error but also no value yet (might still be computing)
+        console.log(`  Node ${name} defined but value not yet available`)
+        return { 
+          nodeId: name, 
+          status: 'success',
+          valueType: 'pending',
+          wasRedefined: nodeExists
+        }
+      }
     } catch (error) {
       console.error('Error defining node:', error)
-      return { nodeId: name, status: 'error', error: error.toString() }
+      return { 
+        nodeId: name, 
+        status: 'error', 
+        error: error.toString()
+      }
     }
   }
   

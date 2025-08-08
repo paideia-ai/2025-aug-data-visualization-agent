@@ -239,6 +239,9 @@ Introspection:
 
 Core Operations:
 - define_node: Create reactive data transformations or visualizations
+  - Automatically handles redefine if node already exists
+  - Returns value preview for debugging (or error if failed)
+  - Use the preview/error to verify your code worked correctly
 - delete_node: Remove a node from the environment  
 - define_input: Create interactive controls (slider, select, text, date)
 
@@ -284,10 +287,18 @@ data.slice(0, 5)  // This will return undefined!
 EXAMPLE WORKFLOW:
 
 1. User asks to analyze visitor patterns
-2. Use evaluate to get a sample: evaluate with code "getVisitorCountByHourRange(9, 12).slice(0, 3)"
+2. Use evaluate to get a sample: evaluate with code "return getVisitorCountByHourRange(9, 12).slice(0, 3)"
 3. Define a node for the full analysis: define_node with visualization code
+   - Check the preview in the response to verify it worked
+   - If you see an error, fix your code and call define_node again (it will auto-redefine)
 4. Create an artifact to display results
 5. Add the visualization node to the artifact
+
+DEBUGGING TIP:
+When define_node returns an error, read it carefully and fix your code:
+- Arquero errors: Check for closure issues, use aq.escape() if needed
+- Reference errors: Check that all dependencies are in the inputs array
+- Type errors: Verify the data structure matches what you expect
 
 Remember: You're helping users explore and understand their data through interactive analysis and visualization!`
 
@@ -353,7 +364,7 @@ app.post('/api/data-analysis-agent', async (req, res) => {
         }),
         
         define_node: tool({
-          description: 'Define a new reactive node in the Observable runtime. Code must include explicit return statement.',
+          description: 'Define a new reactive node in the Observable runtime. Code must include explicit return statement. If node exists, it will be redefined. Returns computed value preview or error for debugging.',
           inputSchema: z.object({
             name: z.string().describe('Name for the new node'),
             inputs: z.array(z.string()).describe('Names of input nodes this depends on'),
@@ -362,6 +373,9 @@ app.post('/api/data-analysis-agent', async (req, res) => {
           outputSchema: z.object({
             nodeId: z.string(),
             status: z.enum(['success', 'error']),
+            valueType: z.string().optional(),
+            preview: z.string().optional(),
+            wasRedefined: z.boolean().optional(),
             error: z.string().optional()
           })
         }),

@@ -162,7 +162,7 @@ function ObservableDemo() {
           avg_sales: aq.op.mean('sales'),
           total_profit: aq.op.sum('profit'),
           avg_profit: aq.op.mean('profit'),
-          profit_margin: d => (aq.op.sum('profit') / aq.op.sum('sales') * 100).toFixed(2)
+          profit_margin: d => aq.op.sum('profit') / aq.op.sum('sales') * 100
         })
 
       const statsTable = document.querySelector("#stats-table")
@@ -178,7 +178,7 @@ function ObservableDemo() {
               <tr><td style="padding: 10px; border-bottom: 1px solid #eee;">Average Monthly Sales</td><td style="text-align: right; padding: 10px; border-bottom: 1px solid #eee;">$${Math.round(stats.avg_sales).toLocaleString()}</td></tr>
               <tr><td style="padding: 10px; border-bottom: 1px solid #eee;">Total Profit</td><td style="text-align: right; padding: 10px; border-bottom: 1px solid #eee;">$${stats.total_profit.toLocaleString()}</td></tr>
               <tr><td style="padding: 10px; border-bottom: 1px solid #eee;">Average Monthly Profit</td><td style="text-align: right; padding: 10px; border-bottom: 1px solid #eee;">$${Math.round(stats.avg_profit).toLocaleString()}</td></tr>
-              <tr><td style="padding: 10px;">Profit Margin</td><td style="text-align: right; padding: 10px;">${stats.profit_margin}%</td></tr>
+              <tr><td style="padding: 10px;">Profit Margin</td><td style="text-align: right; padding: 10px;">${stats.profit_margin.toFixed(2)}%</td></tr>
             `).join('')}
           </table>
         `

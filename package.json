@@ -16,6 +16,8 @@
     "@ai-sdk/anthropic": "^2.0.1",
     "@ai-sdk/react": "^2.0.8",
     "@observablehq/plot": "^0.6.17",
+    "@observablehq/runtime": "^6.0.0",
+    "@observablehq/stdlib": "^5.8.8",
     "@vitejs/plugin-react": "^5.0.0",
     "ai": "^5.0.8",
     "arquero": "^8.0.3",

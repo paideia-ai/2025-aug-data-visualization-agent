@@ -10,11 +10,14 @@ import './DataAnalysisAgent.css'
 function DataAnalysisAgent() {
   const [input, setInput] = useState('show me website visitor data in a table format')
   const [runtime, setRuntime] = useState(null)
+  const [library, setLibrary] = useState(null)
   const [mainModule, setMainModule] = useState(null)
   const [nodes, setNodes] = useState(new Map())
   const [artifacts, setArtifacts] = useState([])
   const [currentArtifactIndex, setCurrentArtifactIndex] = useState(0)
+  const [nodeUpdateTrigger, setNodeUpdateTrigger] = useState(0)  // Force re-render when nodes update
   const outputContainerRef = useRef(null)
+  const libraryRef = useRef(null)
   
   const { messages, sendMessage, status, error, addToolResult } = useChat({
     transport: new DefaultChatTransport({
@@ -72,7 +75,8 @@ function DataAnalysisAgent() {
   // Initialize Observable runtime
   useEffect(() => {
     console.log('🚀 Initializing Observable runtime')
-    const rt = new Runtime(new Library())
+    const library = new Library()
+    const rt = new Runtime(library)
     const mod = rt.module()
     
     // Create a simple observer to trigger computation
@@ -203,8 +207,10 @@ function DataAnalysisAgent() {
     }
     
     setRuntime(rt)
+    setLibrary(library)
     setMainModule(mod)
     setNodes(nodeMap)
+    libraryRef.current = library  // Store in ref for immediate access
     
     // Force initial computation of data functions
     rt._compute().then(() => {
@@ -378,6 +384,8 @@ function DataAnalysisAgent() {
             nodeResult = value
             computeComplete = true
             resolve()
+            // Trigger React re-render when node updates
+            setNodeUpdateTrigger(prev => prev + 1)
           },
           rejected(error) { 
             console.error(`  Node ${name} error:`, error)
@@ -511,7 +519,7 @@ function DataAnalysisAgent() {
       
       switch (type) {
         case 'slider':
-          initialValue = config.min || 0
+          initialValue = config.defaultValue ?? config.min ?? 0
           inputElement = document.createElement('input')
           inputElement.type = 'range'
           inputElement.min = config.min || 0
@@ -521,14 +529,18 @@ function DataAnalysisAgent() {
           break
           
         case 'select':
-          initialValue = config.options?.[0] || ''
+          initialValue = config.defaultValue ?? config.options?.[0] ?? ''
           inputElement = document.createElement('select')
           for (const option of (config.options || [])) {
             const opt = document.createElement('option')
             opt.value = option
             opt.text = option
+            if (option === initialValue) {
+              opt.selected = true
+            }
             inputElement.appendChild(opt)
           }
+          inputElement.value = initialValue
           break
           
         case 'text':
@@ -549,17 +561,65 @@ function DataAnalysisAgent() {
           return { status: 'error', error: `Unknown input type: ${type}` }
       }
       
-      // Create the input node with Observable
-      const variable = mainModule.define(name, [], () => {
-        const generator = mainModule.Generators.input(inputElement)
-        return generator.next().value
+      // Use Observable's Generators.input for reactive inputs
+      // Define the viewof node that returns the element
+      const viewVariable = mainModule.define(`viewof ${name}`, [], () => {
+        return inputElement
+      })
+      
+      // Define the value node using Generators.input
+      // This creates a generator that yields new values when the input changes
+      const valueVariable = mainModule.variable().define(name, [], () => {
+        // Use ref to access library since this might be called before state updates
+        const lib = libraryRef.current || library
+        if (!lib) {
+          console.error('Library not available yet')
+          return initialValue  // Fallback to static value
+        }
+        const generator = lib.Generators.input(inputElement)
+        
+        // Wrap the generator to log what it's yielding
+        const wrappedGenerator = {
+          next: function(value) {
+            const result = generator.next(value)
+            console.log(`Generator ${name}.next() called:`, {
+              value: value,
+              result: result,
+              done: result.done,
+              yielded: result.value
+            })
+            if (result.value && typeof result.value.then === 'function') {
+              result.value.then(v => console.log(`  Generator ${name} promise resolved to:`, v))
+            }
+            return result
+          },
+          return: function(value) {
+            console.log(`Generator ${name}.return() called with:`, value)
+            return generator.return(value)
+          }
+        }
+        
+        return wrappedGenerator
+      })
+      
+      // Store both the view and value variables
+      nodes.set(`viewof ${name}`, {
+        type: 'input-view',
+        variable: viewVariable,
+        element: inputElement,
+        inputs: []
       })
       
       nodes.set(name, {
-        type: 'input',
-        variable,
+        type: 'input-value',
+        variable: valueVariable,
         element: inputElement,
-        inputs: []
+        inputs: [`viewof ${name}`]
+      })
+      
+      // Force computation to ensure the value is available
+      runtime._compute().then(() => {
+        console.log(`Input ${name} initialized with value:`, inputElement.value)
       })
       
       return { nodeId: name, initialValue }
@@ -864,12 +924,66 @@ function DataAnalysisAgent() {
         }
         
         nodeContainer.appendChild(table)
-      } else if (node.type === 'input') {
-        // It's an input control
-        const label = document.createElement('label')
-        label.textContent = nodeId + ': '
-        label.appendChild(node.element)
-        nodeContainer.appendChild(label)
+      } else if (node.type === 'input' || node.type === 'input-view' || node.type === 'input-value') {
+        // It's an input control - render the view node
+        let elementToRender = null
+        let nodeName = nodeId
+        
+        if (node.type === 'input-value') {
+          // For value nodes, get the corresponding view node
+          const viewNode = nodes.get(`viewof ${nodeId}`)
+          if (viewNode && viewNode.element) {
+            elementToRender = viewNode.element
+          }
+        } else if (node.type === 'input-view' && node.element) {
+          // For view nodes, use the stored element
+          elementToRender = node.element
+          nodeName = nodeId.replace('viewof ', '')
+        } else if (node.element) {
+          // For old-style input nodes
+          elementToRender = node.element
+          nodeName = nodeId.replace('viewof ', '')
+        }
+        
+        if (elementToRender) {
+          const label = document.createElement('label')
+          label.textContent = nodeName + ': '
+          
+          // Clone the element to avoid React issues, but manually sync changes
+          const clonedElement = elementToRender.cloneNode(true)
+          
+          // Set up manual synchronization - just update the original element
+          const syncValue = (e) => {
+            // Update the original element's value
+            elementToRender.value = e.target.value
+            
+            // Try dispatching both input and change events
+            // Observable might be listening to either one
+            const inputEvent = new Event('input', { bubbles: true })
+            const changeEvent = new Event('change', { bubbles: true })
+            
+            elementToRender.dispatchEvent(inputEvent)
+            elementToRender.dispatchEvent(changeEvent)
+            
+            console.log(`Input ${nodeName} changed to:`, e.target.value)
+            console.log(`Dispatched input and change events on original element`)
+            
+            // Debug: Check the value after a short delay
+            setTimeout(() => {
+              const valueNode = nodes.get(nodeName)
+              console.log(`New computed value for ${nodeName}:`, valueNode?.variable?._value)
+              console.log(`Original element value:`, elementToRender.value)
+              console.log(`Variable version:`, valueNode?.variable?._version)
+            }, 100)
+          }
+          
+          // Add event listener to the cloned element
+          clonedElement.addEventListener('change', syncValue)
+          clonedElement.addEventListener('input', syncValue)
+          
+          label.appendChild(clonedElement)
+          nodeContainer.appendChild(label)
+        }
       } else {
         // Plain JavaScript value
         const pre = document.createElement('pre')
@@ -879,7 +993,7 @@ function DataAnalysisAgent() {
       
       container.appendChild(nodeContainer)
     })
-  }, [artifacts, currentArtifactIndex, nodes])
+  }, [artifacts, currentArtifactIndex, nodes, nodeUpdateTrigger])  // Added nodeUpdateTrigger
   
   return (
     <div className="data-analysis-agent">

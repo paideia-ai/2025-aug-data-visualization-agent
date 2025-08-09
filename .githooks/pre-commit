@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# Run deno fmt to format all files
+echo "Running deno fmt..."
+deno fmt
+
+# Add any files that were modified by deno fmt
+# -u updates tracked files that were modified
+git add -u
+
+# Run deno task build to ensure nothing is broken
+echo "Running deno task build..."
+if ! deno task build; then
+  echo "Build failed! Please fix the errors before committing."
+  exit 1
+fi
+
+echo "Pre-commit checks passed!"
+exit 0

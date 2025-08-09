@@ -126,7 +126,7 @@ When define_node returns an error, read it carefully and fix your code:
 
 Remember: You're helping users explore and understand their data through interactive analysis and visualization!`
 
-app.post('/api/data-analysis-agent', async (req, res) => {
+app.post('/api/data-analysis-agent', (req, res) => {
   try {
     const { messages } = req.body
     console.log('📊 Data analysis agent received messages:', messages.length)
@@ -296,7 +296,7 @@ app.post('/api/data-analysis-agent', async (req, res) => {
   }
 })
 
-const PORT = process.env.PORT || 3001
+const PORT = Deno.env.get('PORT') || 3001
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`)
 })

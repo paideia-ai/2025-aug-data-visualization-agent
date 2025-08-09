@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
 import * as Plot from '@observablehq/plot'
@@ -19,7 +19,7 @@ function DataAnalysisAgent() {
   const outputContainerRef = useRef(null)
   const libraryRef = useRef(null)
 
-  const { messages, sendMessage, status, error, addToolResult } = useChat({
+  const { messages, sendMessage, status, addToolResult } = useChat({
     transport: new DefaultChatTransport({
       api: '/api/data-analysis-agent',
     }),
@@ -28,15 +28,15 @@ function DataAnalysisAgent() {
 
   // Update debug object when state changes
   useEffect(() => {
-    if (window.observableDebug) {
-      window.observableDebug.nodes = nodes
-      window.observableDebug.runtime = runtime
-      window.observableDebug.module = mainModule
-      window.observableDebug.getArtifacts = () => artifacts
-      window.observableDebug.getCurrentArtifact = () => artifacts[currentArtifactIndex]
+    if (globalThis.observableDebug) {
+      globalThis.observableDebug.nodes = nodes
+      globalThis.observableDebug.runtime = runtime
+      globalThis.observableDebug.module = mainModule
+      globalThis.observableDebug.getArtifacts = () => artifacts
+      globalThis.observableDebug.getCurrentArtifact = () => artifacts[currentArtifactIndex]
 
       // Update the debug utilities to use current state
-      window.observableDebug.getNode = (name) => {
+      globalThis.observableDebug.getNode = (name) => {
         const node = nodes.get(name)
         if (!node) {
           console.log(`Node '${name}' not found. Available nodes:`, Array.from(nodes.keys()))
@@ -52,7 +52,7 @@ function DataAnalysisAgent() {
         }
       }
 
-      window.observableDebug.listNodes = () => {
+      globalThis.observableDebug.listNodes = () => {
         const result = []
         for (const [name, node] of nodes) {
           result.push({
@@ -66,7 +66,7 @@ function DataAnalysisAgent() {
         return result
       }
 
-      window.observableDebug.getValue = (name) => {
+      globalThis.observableDebug.getValue = (name) => {
         return nodes.get(name)?.variable?._value
       }
     }
@@ -220,8 +220,8 @@ function DataAnalysisAgent() {
     })
 
     // Add debugging utilities to window
-    if (!window.observableDebug) {
-      window.observableDebug = {
+    if (!globalThis.observableDebug) {
+      globalThis.observableDebug = {
         runtime: rt,
         module: mod,
         nodes: nodeMap,
@@ -240,7 +240,7 @@ function DataAnalysisAgent() {
           console.log('Computation complete')
         },
       }
-      console.log('🔧 Debug utilities added to window.observableDebug')
+      console.log('🔧 Debug utilities added to globalThis.observableDebug')
       console.log(
         'Available commands: getNode(name), listNodes(), getValue(name), listScope(), compute(), getArtifacts()',
       )
@@ -376,7 +376,7 @@ function DataAnalysisAgent() {
       // Create a promise to wait for the node result
       let nodeResult = null
       let nodeError = null
-      let computeComplete = false
+      const _computeComplete = false
 
       const resultPromise = new Promise((resolve) => {
         // Create observer for the node
@@ -470,7 +470,7 @@ function DataAnalysisAgent() {
             const stringified = JSON.stringify(nodeResult)
             preview = stringified.length > 200 ? stringified.substring(0, 200) + '...' : stringified
           }
-        } catch (e) {
+        } catch (_e) {
           preview = `[Value of type ${typeof nodeResult}]`
         }
 
@@ -783,7 +783,7 @@ function DataAnalysisAgent() {
       await runtime._compute()
 
       // Get the computed value - prefer tempResult from observer
-      let value = tempResult !== undefined ? tempResult : tempVariable._value
+      const value = tempResult !== undefined ? tempResult : tempVariable._value
       console.log('  Final value:', value, 'type:', typeof value)
 
       // Check for errors
@@ -1106,6 +1106,7 @@ function DataAnalysisAgent() {
         <div className='output-section'>
           <div className='artifact-navigation'>
             <button
+              type='button'
               onClick={() => setCurrentArtifactIndex(Math.max(0, currentArtifactIndex - 1))}
               disabled={currentArtifactIndex === 0}
               className='nav-button'
@@ -1116,6 +1117,7 @@ function DataAnalysisAgent() {
               {artifacts.length > 0 ? `${currentArtifactIndex + 1} / ${artifacts.length}` : 'No artifacts'}
             </span>
             <button
+              type='button'
               onClick={() => setCurrentArtifactIndex(Math.min(artifacts.length - 1, currentArtifactIndex + 1))}
               disabled={currentArtifactIndex >= artifacts.length - 1}
               className='nav-button'

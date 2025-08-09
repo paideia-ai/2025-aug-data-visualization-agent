@@ -26,3 +26,11 @@ dist-ssr
 vendor/*
 upstream/*
 
+# React Router typegen
+.react-router/
+app/**/*.tsx.d.ts
+app/**/*.jsx.d.ts
+
+# React Router build output
+build/
+

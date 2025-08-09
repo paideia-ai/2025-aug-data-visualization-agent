@@ -1,9 +1,9 @@
 {
   "tasks": {
-    "dev": "deno run -A npm:vite",
-    "server": "deno run -A --watch server.js",
-    "build": "deno run -A npm:vite build",
-    "preview": "deno run -A npm:vite preview"
+    "dev": "deno run -A npm:@react-router/dev dev --config vite.dev.ts",
+    "build": "deno run -A npm:@react-router/dev build --config vite.build.ts",
+    "preview": "deno run -A npm:vite preview",
+    "typecheck": "deno run -A npm:typescript --noEmit"
   },
   "compilerOptions": {
     "jsx": "react-jsx",

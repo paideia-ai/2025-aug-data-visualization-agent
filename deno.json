@@ -9,6 +9,13 @@
     "jsx": "react-jsx",
     "jsxImportSource": "react"
   },
+  "fmt": {
+    "lineWidth": 120,
+    "singleQuote": true,
+    "semiColons": false,
+    "indentWidth": 2,
+    "proseWrap": "preserve"
+  },
   "imports": {
     "react": "npm:react@19.0.0-rc.1",
     "react-dom": "npm:react-dom@19.0.0-rc.1",

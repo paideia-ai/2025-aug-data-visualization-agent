@@ -320,9 +320,9 @@
   color: #4b5563;
 }
 
-.node-output input[type="range"],
-.node-output input[type="text"],
-.node-output input[type="date"],
+.node-output input[type='range'],
+.node-output input[type='text'],
+.node-output input[type='date'],
 .node-output select {
   flex: 1;
   padding: 6px 10px;
@@ -356,7 +356,7 @@
   .agent-content {
     flex-direction: column;
   }
-  
+
   .chat-section,
   .output-section {
     flex: none;

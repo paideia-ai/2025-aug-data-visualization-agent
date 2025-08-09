@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
 import * as Plot from '@observablehq/plot'
@@ -15,10 +15,10 @@ function DataAnalysisAgent() {
   const [nodes, setNodes] = useState(new Map())
   const [artifacts, setArtifacts] = useState([])
   const [currentArtifactIndex, setCurrentArtifactIndex] = useState(0)
-  const [nodeUpdateTrigger, setNodeUpdateTrigger] = useState(0)  // Force re-render when nodes update
+  const [nodeUpdateTrigger, setNodeUpdateTrigger] = useState(0) // Force re-render when nodes update
   const outputContainerRef = useRef(null)
   const libraryRef = useRef(null)
-  
+
   const { messages, sendMessage, status, error, addToolResult } = useChat({
     transport: new DefaultChatTransport({
       api: '/api/data-analysis-agent',
@@ -34,7 +34,7 @@ function DataAnalysisAgent() {
       window.observableDebug.module = mainModule
       window.observableDebug.getArtifacts = () => artifacts
       window.observableDebug.getCurrentArtifact = () => artifacts[currentArtifactIndex]
-      
+
       // Update the debug utilities to use current state
       window.observableDebug.getNode = (name) => {
         const node = nodes.get(name)
@@ -48,10 +48,10 @@ function DataAnalysisAgent() {
           hasValue: '_value' in node.variable,
           value: node.variable._value,
           valueType: typeof node.variable._value,
-          inputs: node.inputs || []
+          inputs: node.inputs || [],
         }
       }
-      
+
       window.observableDebug.listNodes = () => {
         const result = []
         for (const [name, node] of nodes) {
@@ -60,32 +60,36 @@ function DataAnalysisAgent() {
             type: node.type,
             hasValue: '_value' in node.variable,
             valueType: typeof node.variable._value,
-            inputs: node.inputs || []
+            inputs: node.inputs || [],
           })
         }
         return result
       }
-      
+
       window.observableDebug.getValue = (name) => {
         return nodes.get(name)?.variable?._value
       }
     }
   }, [nodes, runtime, mainModule, artifacts, currentArtifactIndex])
-  
+
   // Initialize Observable runtime
   useEffect(() => {
     console.log('🚀 Initializing Observable runtime')
     const library = new Library()
     const rt = new Runtime(library)
     const mod = rt.module()
-    
+
     // Create a simple observer to trigger computation
     const dataObserver = {
       pending() {},
-      fulfilled(value) { console.log('Data function computed:', typeof value) },
-      rejected(error) { console.error('Data function error:', error) }
+      fulfilled(value) {
+        console.log('Data function computed:', typeof value)
+      },
+      rejected(error) {
+        console.error('Data function error:', error)
+      },
     }
-    
+
     // Define initial data query methods WITH observers
     const initialNodes = {
       // Website analytics data
@@ -95,20 +99,19 @@ function DataAnalysisAgent() {
           for (let hour = hourStart; hour <= Math.min(hourEnd, 23); hour++) {
             // Simulate realistic traffic patterns with peaks at 10am and 3pm
             const baseCount = 100
-            const peakMultiplier = hour === 10 || hour === 15 ? 2.5 : 
-                                 hour >= 9 && hour <= 17 ? 1.8 : 0.6
+            const peakMultiplier = hour === 10 || hour === 15 ? 2.5 : hour >= 9 && hour <= 17 ? 1.8 : 0.6
             const randomVariation = Math.random() * 30 - 15
             data.push({
               hour,
               visitors: Math.round(baseCount * peakMultiplier + randomVariation),
               uniqueVisitors: Math.round((baseCount * peakMultiplier + randomVariation) * 0.7),
-              pageViews: Math.round((baseCount * peakMultiplier + randomVariation) * 3.5)
+              pageViews: Math.round((baseCount * peakMultiplier + randomVariation) * 3.5),
             })
           }
           return data
         }
       }),
-      
+
       // Product sales data
       getProductSalesByCategory: mod.variable(dataObserver).define('getProductSalesByCategory', [], () => {
         return (category = null) => {
@@ -118,12 +121,12 @@ function DataAnalysisAgent() {
             'Clothing': ['T-Shirt', 'Jeans', 'Dress', 'Jacket', 'Shoes'],
             'Books': ['Fiction', 'Non-Fiction', 'Science', 'History', 'Art'],
             'Home & Garden': ['Furniture', 'Decor', 'Tools', 'Plants', 'Kitchen'],
-            'Sports': ['Running Shoes', 'Yoga Mat', 'Weights', 'Bike', 'Tennis Racket']
+            'Sports': ['Running Shoes', 'Yoga Mat', 'Weights', 'Bike', 'Tennis Racket'],
           }
-          
+
           const data = []
           const categoriesToProcess = category ? [category] : categories
-          
+
           for (const cat of categoriesToProcess) {
             if (products[cat]) {
               for (const product of products[cat]) {
@@ -133,7 +136,7 @@ function DataAnalysisAgent() {
                   unitsSold: Math.floor(Math.random() * 500) + 50,
                   revenue: Math.floor(Math.random() * 50000) + 5000,
                   profit: Math.floor(Math.random() * 10000) + 1000,
-                  rating: (Math.random() * 2 + 3).toFixed(1)
+                  rating: (Math.random() * 2 + 3).toFixed(1),
                 })
               }
             }
@@ -141,14 +144,14 @@ function DataAnalysisAgent() {
           return data
         }
       }),
-      
+
       // Customer demographics data
       getCustomerDemographics: mod.variable(dataObserver).define('getCustomerDemographics', [], () => {
         return (ageMin = 18, ageMax = 65) => {
           const data = []
           const segments = ['Budget', 'Standard', 'Premium']
           const regions = ['North', 'South', 'East', 'West', 'Central']
-          
+
           for (let age = ageMin; age <= ageMax; age += 5) {
             for (const segment of segments) {
               for (const region of regions) {
@@ -159,7 +162,7 @@ function DataAnalysisAgent() {
                   region,
                   customerCount: count,
                   avgSpending: Math.floor(Math.random() * 500) + 100,
-                  retentionRate: (Math.random() * 40 + 60).toFixed(1)
+                  retentionRate: (Math.random() * 40 + 60).toFixed(1),
                 })
               }
             }
@@ -167,20 +170,19 @@ function DataAnalysisAgent() {
           return data
         }
       }),
-      
+
       // Time series sales data
       getMonthlySalesData: mod.variable(dataObserver).define('getMonthlySalesData', [], () => {
         return (startMonth = 1, endMonth = 12, year = 2024) => {
           const data = []
           const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-          
+
           for (let month = startMonth; month <= endMonth; month++) {
             const baseSales = 100000
-            const seasonalMultiplier = month === 12 || month === 11 ? 1.5 : 
-                                     month >= 6 && month <= 8 ? 0.8 : 1.0
+            const seasonalMultiplier = month === 12 || month === 11 ? 1.5 : month >= 6 && month <= 8 ? 0.8 : 1.0
             const trend = month * 2000 // Growing trend
             const randomVariation = Math.random() * 20000 - 10000
-            
+
             data.push({
               month: months[month - 1],
               monthNumber: month,
@@ -188,35 +190,35 @@ function DataAnalysisAgent() {
               sales: Math.round(baseSales * seasonalMultiplier + trend + randomVariation),
               orders: Math.floor(Math.random() * 2000) + 1000,
               averageOrderValue: Math.floor(Math.random() * 100) + 50,
-              newCustomers: Math.floor(Math.random() * 500) + 200
+              newCustomers: Math.floor(Math.random() * 500) + 200,
             })
           }
           return data
         }
-      })
+      }),
     }
-    
+
     // Store node references
     const nodeMap = new Map()
     for (const [name, variable] of Object.entries(initialNodes)) {
       nodeMap.set(name, {
         type: 'data',
         variable,
-        inputs: []
+        inputs: [],
       })
     }
-    
+
     setRuntime(rt)
     setLibrary(library)
     setMainModule(mod)
     setNodes(nodeMap)
-    libraryRef.current = library  // Store in ref for immediate access
-    
+    libraryRef.current = library // Store in ref for immediate access
+
     // Force initial computation of data functions
     rt._compute().then(() => {
       console.log('✅ Runtime initialized and computed with', nodeMap.size, 'initial nodes')
     })
-    
+
     // Add debugging utilities to window
     if (!window.observableDebug) {
       window.observableDebug = {
@@ -229,17 +231,19 @@ function DataAnalysisAgent() {
           return Array.from(mod._scope).map(([name, variable]) => ({
             name,
             hasValue: '_value' in variable,
-            valueType: typeof variable._value
+            valueType: typeof variable._value,
           }))
         },
         // Force recomputation
         compute: async () => {
           await rt._compute()
           console.log('Computation complete')
-        }
+        },
       }
       console.log('🔧 Debug utilities added to window.observableDebug')
-      console.log('Available commands: getNode(name), listNodes(), getValue(name), listScope(), compute(), getArtifacts()')
+      console.log(
+        'Available commands: getNode(name), listNodes(), getValue(name), listScope(), compute(), getArtifacts()',
+      )
     }
   }, [])
 
@@ -247,60 +251,59 @@ function DataAnalysisAgent() {
   const executeTool = async (toolName, input, toolCallId) => {
     console.log(`🔧 Executing tool: ${toolName}`)
     console.log(`📥 Input for ${toolName}:`, JSON.stringify(input, null, 2))
-    
+
     try {
       let output
-      
+
       switch (toolName) {
         case 'list_nodes':
           output = listNodes(input?.type)
           break
-          
+
         case 'inspect_node':
           output = inspectNode(input?.name)
           break
-          
+
         case 'define_node':
           output = await defineNode(input?.name, input?.inputs, input?.code)
           break
-          
+
         case 'delete_node':
           output = deleteNode(input?.name)
           break
-          
+
         case 'define_input':
           output = defineInput(input?.name, input?.type, input?.config)
           break
-          
+
         case 'create_artifact':
           output = createArtifact(input?.id, input?.title, input?.description)
           break
-          
+
         case 'add_to_artifact':
           output = addToArtifact(input?.artifactId, input?.nodeId, input?.displayType)
           break
-          
+
         case 'remove_from_artifact':
           output = removeFromArtifact(input?.artifactId, input?.nodeId)
           break
-          
+
         case 'evaluate':
           output = await evaluateCode(input?.code)
           break
-          
+
         default:
           output = { status: 'error', error: `Unknown tool: ${toolName}` }
       }
-      
+
       console.log(`✅ Tool ${toolName} executed successfully`)
       console.log(`📤 Output from ${toolName}:`, JSON.stringify(output, null, 2))
-      
+
       await addToolResult({
         toolCallId,
         tool: toolName,
         output: JSON.stringify(output),
       })
-      
     } catch (error) {
       console.error(`❌ Error executing tool ${toolName}:`, error)
       await addToolResult({
@@ -310,7 +313,7 @@ function DataAnalysisAgent() {
       })
     }
   }
-  
+
   // Tool implementations
   const listNodes = (type = 'all') => {
     const nodeList = []
@@ -319,23 +322,23 @@ function DataAnalysisAgent() {
         nodeList.push({
           name,
           type: node.type,
-          inputs: node.inputs || []
+          inputs: node.inputs || [],
         })
       }
     }
     return { nodes: nodeList }
   }
-  
+
   const inspectNode = (name) => {
     const node = nodes.get(name)
     if (!node) {
       return { name, error: 'Node not found' }
     }
-    
+
     try {
       const value = node.variable?._value
       const result = { name, type: node.type }
-      
+
       if (value !== undefined) {
         // For functions, show signature
         if (typeof value === 'function') {
@@ -349,55 +352,57 @@ function DataAnalysisAgent() {
           result.value = value
         }
       }
-      
+
       return result
     } catch (error) {
       return { name, type: node.type, error: error.toString() }
     }
   }
-  
+
   const defineNode = async (name, inputs = [], code) => {
     try {
       console.log(`📝 Defining node: ${name} with inputs:`, inputs)
       console.log(`  Code preview:`, code.substring(0, 100) + '...')
-      
+
       // Check if node already exists
       const nodeExists = nodes.has(name)
-      
+
       // Delete existing node if it exists (for redefine)
       if (nodeExists) {
         console.log(`  Node ${name} already exists, will redefine`)
         nodes.get(name).variable.delete()
       }
-      
+
       // Create a promise to wait for the node result
       let nodeResult = null
       let nodeError = null
       let computeComplete = false
-      
+
       const resultPromise = new Promise((resolve) => {
         // Create observer for the node
         const nodeObserver = {
-          pending() { console.log(`  Node ${name} is computing...`) },
-          fulfilled(value) { 
+          pending() {
+            console.log(`  Node ${name} is computing...`)
+          },
+          fulfilled(value) {
             console.log(`  Node ${name} computed:`, typeof value)
             nodeResult = value
             computeComplete = true
             resolve()
             // Trigger React re-render when node updates
-            setNodeUpdateTrigger(prev => prev + 1)
+            setNodeUpdateTrigger((prev) => prev + 1)
           },
-          rejected(error) { 
+          rejected(error) {
             console.error(`  Node ${name} error:`, error)
             nodeError = error
             computeComplete = true
             resolve()
-          }
+          },
         }
-        
+
         // Create the node definition function with observer
         // Use define() for new nodes, redefine() would be done by deleting and defining
-        const variable = mainModule.variable(nodeObserver).define(name, inputs, function(...inputValues) {
+        const variable = mainModule.variable(nodeObserver).define(name, inputs, function (...inputValues) {
           // Get all data query methods from nodes
           const queryMethods = {}
           for (const [nodeName, node] of nodes) {
@@ -405,50 +410,50 @@ function DataAnalysisAgent() {
               queryMethods[nodeName] = node.variable._value
             }
           }
-          
+
           // Create a context with all available libraries and input values
           const context = {
             Plot,
             aq,
             d3: { csv: () => {} },
             Library,
-            ...queryMethods
+            ...queryMethods,
           }
-          
+
           // Add input values
           inputs.forEach((inputName, index) => {
             context[inputName] = inputValues[index]
           })
-          
+
           // Execute the code with the context
           const func = new Function(...Object.keys(context), code)
           return func(...Object.values(context))
         })
-        
+
         nodes.set(name, {
           type: 'data',
           variable,
-          inputs
+          inputs,
         })
       })
-      
+
       // Force computation of the new node
       await runtime._compute()
-      
+
       // Wait for the observer to report the result (with timeout)
       await Promise.race([
         resultPromise,
-        new Promise(resolve => setTimeout(resolve, 2000)) // 2 second timeout
+        new Promise((resolve) => setTimeout(resolve, 2000)), // 2 second timeout
       ])
-      
+
       // Prepare the response
       if (nodeError) {
         console.log(`  Node ${name} failed with error`)
-        return { 
-          nodeId: name, 
-          status: 'error', 
+        return {
+          nodeId: name,
+          status: 'error',
           error: nodeError.toString(),
-          wasRedefined: nodeExists
+          wasRedefined: nodeExists,
         }
       } else if (nodeResult !== undefined) {
         // Create a preview of the value
@@ -468,41 +473,41 @@ function DataAnalysisAgent() {
         } catch (e) {
           preview = `[Value of type ${typeof nodeResult}]`
         }
-        
+
         console.log(`  Node ${name} defined successfully with value preview:`, preview)
-        return { 
-          nodeId: name, 
+        return {
+          nodeId: name,
           status: 'success',
           valueType: typeof nodeResult,
           preview,
-          wasRedefined: nodeExists
+          wasRedefined: nodeExists,
         }
       } else {
         // No error but also no value yet (might still be computing)
         console.log(`  Node ${name} defined but value not yet available`)
-        return { 
-          nodeId: name, 
+        return {
+          nodeId: name,
           status: 'success',
           valueType: 'pending',
-          wasRedefined: nodeExists
+          wasRedefined: nodeExists,
         }
       }
     } catch (error) {
       console.error('Error defining node:', error)
-      return { 
-        nodeId: name, 
-        status: 'error', 
-        error: error.toString()
+      return {
+        nodeId: name,
+        status: 'error',
+        error: error.toString(),
       }
     }
   }
-  
+
   const deleteNode = (name) => {
     const node = nodes.get(name)
     if (!node) {
       return { status: 'error', error: 'Node not found' }
     }
-    
+
     try {
       node.variable.delete()
       nodes.delete(name)
@@ -511,12 +516,12 @@ function DataAnalysisAgent() {
       return { status: 'error', error: error.toString() }
     }
   }
-  
+
   const defineInput = (name, type, config) => {
     try {
       let initialValue
       let inputElement
-      
+
       switch (type) {
         case 'slider':
           initialValue = config.defaultValue ?? config.min ?? 0
@@ -527,7 +532,7 @@ function DataAnalysisAgent() {
           inputElement.step = config.step || 1
           inputElement.value = initialValue
           break
-          
+
         case 'select':
           initialValue = config.defaultValue ?? config.options?.[0] ?? ''
           inputElement = document.createElement('select')
@@ -542,31 +547,31 @@ function DataAnalysisAgent() {
           }
           inputElement.value = initialValue
           break
-          
+
         case 'text':
           initialValue = config.defaultValue || ''
           inputElement = document.createElement('input')
           inputElement.type = 'text'
           inputElement.value = initialValue
           break
-          
+
         case 'date':
           initialValue = config.defaultValue || new Date().toISOString().split('T')[0]
           inputElement = document.createElement('input')
           inputElement.type = 'date'
           inputElement.value = initialValue
           break
-          
+
         default:
           return { status: 'error', error: `Unknown input type: ${type}` }
       }
-      
+
       // Use Observable's Generators.input for reactive inputs
       // Define the viewof node that returns the element
       const viewVariable = mainModule.define(`viewof ${name}`, [], () => {
         return inputElement
       })
-      
+
       // Define the value node using Generators.input
       // This creates a generator that yields new values when the input changes
       const valueVariable = mainModule.variable().define(name, [], () => {
@@ -574,102 +579,106 @@ function DataAnalysisAgent() {
         const lib = libraryRef.current || library
         if (!lib) {
           console.error('Library not available yet')
-          return initialValue  // Fallback to static value
+          return initialValue // Fallback to static value
         }
         const generator = lib.Generators.input(inputElement)
-        
+
         // Wrap the generator to log what it's yielding
         const wrappedGenerator = {
-          next: function(value) {
+          next: function (value) {
             const result = generator.next(value)
             console.log(`Generator ${name}.next() called:`, {
               value: value,
               result: result,
               done: result.done,
-              yielded: result.value
+              yielded: result.value,
             })
             if (result.value && typeof result.value.then === 'function') {
-              result.value.then(v => console.log(`  Generator ${name} promise resolved to:`, v))
+              result.value.then((v) => console.log(`  Generator ${name} promise resolved to:`, v))
             }
             return result
           },
-          return: function(value) {
+          return: function (value) {
             console.log(`Generator ${name}.return() called with:`, value)
             return generator.return(value)
-          }
+          },
         }
-        
+
         return wrappedGenerator
       })
-      
+
       // Store both the view and value variables
       nodes.set(`viewof ${name}`, {
         type: 'input-view',
         variable: viewVariable,
         element: inputElement,
-        inputs: []
+        inputs: [],
       })
-      
+
       nodes.set(name, {
         type: 'input-value',
         variable: valueVariable,
         element: inputElement,
-        inputs: [`viewof ${name}`]
+        inputs: [`viewof ${name}`],
       })
-      
+
       // Force computation to ensure the value is available
       runtime._compute().then(() => {
         console.log(`Input ${name} initialized with value:`, inputElement.value)
       })
-      
+
       return { nodeId: name, initialValue }
     } catch (error) {
       return { status: 'error', error: error.toString() }
     }
   }
-  
+
   const createArtifact = (id, title, description) => {
     const artifact = {
       id,
       title,
       description,
-      nodes: []
+      nodes: [],
     }
-    setArtifacts(prev => [...prev, artifact])
+    setArtifacts((prev) => [...prev, artifact])
     setCurrentArtifactIndex(artifacts.length)
     return { artifactId: id }
   }
-  
+
   const addToArtifact = (artifactId, nodeId, displayType = 'auto') => {
-    setArtifacts(prev => prev.map(artifact => {
-      if (artifact.id === artifactId) {
-        return {
-          ...artifact,
-          nodes: [...artifact.nodes, { nodeId, displayType }]
+    setArtifacts((prev) =>
+      prev.map((artifact) => {
+        if (artifact.id === artifactId) {
+          return {
+            ...artifact,
+            nodes: [...artifact.nodes, { nodeId, displayType }],
+          }
         }
-      }
-      return artifact
-    }))
+        return artifact
+      })
+    )
     return { status: 'success' }
   }
-  
+
   const removeFromArtifact = (artifactId, nodeId) => {
-    setArtifacts(prev => prev.map(artifact => {
-      if (artifact.id === artifactId) {
-        return {
-          ...artifact,
-          nodes: artifact.nodes.filter(n => n.nodeId !== nodeId)
+    setArtifacts((prev) =>
+      prev.map((artifact) => {
+        if (artifact.id === artifactId) {
+          return {
+            ...artifact,
+            nodes: artifact.nodes.filter((n) => n.nodeId !== nodeId),
+          }
         }
-      }
-      return artifact
-    }))
+        return artifact
+      })
+    )
     return { status: 'success' }
   }
-  
+
   const evaluateCode = async (code) => {
     try {
       console.log('🔍 Evaluating code:', code)
-      
+
       // First, try direct evaluation with already computed values
       const directContext = {}
       for (const [name, node] of nodes) {
@@ -678,13 +687,13 @@ function DataAnalysisAgent() {
           console.log(`  Found ${name}:`, typeof node.variable._value)
         }
       }
-      
+
       // Add libraries
       directContext.Plot = Plot
       directContext.aq = aq
       directContext.d3 = { csv: () => {} }
       directContext.Library = Library
-      
+
       // If we have the functions, try direct evaluation
       if (directContext.getVisitorCountByHourRange) {
         try {
@@ -692,48 +701,51 @@ function DataAnalysisAgent() {
           const func = new Function(...Object.keys(directContext), code)
           const result = func(...Object.values(directContext))
           console.log('  Direct evaluation result:', result)
-          
+
           // Check size before returning
           const serialized = JSON.stringify(result)
           if (serialized && serialized.length > 2000) {
             return {
               status: 'error',
-              error: 'Result too large (> 2000 characters). Please refine your query or stringify manually with a prefix.'
+              error:
+                'Result too large (> 2000 characters). Please refine your query or stringify manually with a prefix.',
             }
           }
-          
+
           return { status: 'success', value: result }
         } catch (directError) {
           console.error('  Direct evaluation failed:', directError)
           // Fall through to temp node approach
         }
       }
-      
+
       // Fallback: Create a temporary node with dependencies
       console.log('  Using temp node approach')
       const tempName = `_temp_${Date.now()}_${Math.random().toString(36).substring(7)}`
-      
+
       // Create observer for the temp node
       let tempResult = undefined
       let tempError = null
       const tempObserver = {
-        pending() { console.log('  Temp node pending') },
-        fulfilled(value) { 
-          console.log('  Temp node fulfilled with:', value)
-          tempResult = value 
+        pending() {
+          console.log('  Temp node pending')
         },
-        rejected(error) { 
+        fulfilled(value) {
+          console.log('  Temp node fulfilled with:', value)
+          tempResult = value
+        },
+        rejected(error) {
           console.error('  Temp node rejected:', error)
-          tempError = error 
-        }
+          tempError = error
+        },
       }
-      
+
       // Define the temp node that evaluates the code with observer
       // Use the data functions as dependencies
       const tempVariable = mainModule.variable(tempObserver).define(
-        tempName, 
+        tempName,
         ['getVisitorCountByHourRange', 'getProductSalesByCategory', 'getCustomerDemographics', 'getMonthlySalesData'],
-        function(getVisitorCountByHourRange, getProductSalesByCategory, getCustomerDemographics, getMonthlySalesData) {
+        function (getVisitorCountByHourRange, getProductSalesByCategory, getCustomerDemographics, getMonthlySalesData) {
           console.log('  Executing evaluation code in temp node')
           // Create evaluation context with all available items
           const context = {
@@ -744,31 +756,36 @@ function DataAnalysisAgent() {
             getVisitorCountByHourRange,
             getProductSalesByCategory,
             getCustomerDemographics,
-            getMonthlySalesData
+            getMonthlySalesData,
           }
-          
+
           // Execute the code
           const func = new Function(...Object.keys(context), code)
           const result = func(...Object.values(context))
           console.log('  Evaluation result:', result)
           return result
-        }
+        },
       )
-      
+
       // Store the temp node
       nodes.set(tempName, {
         type: 'temp',
         variable: tempVariable,
-        inputs: ['getVisitorCountByHourRange', 'getProductSalesByCategory', 'getCustomerDemographics', 'getMonthlySalesData']
+        inputs: [
+          'getVisitorCountByHourRange',
+          'getProductSalesByCategory',
+          'getCustomerDemographics',
+          'getMonthlySalesData',
+        ],
       })
-      
+
       // Force computation
       await runtime._compute()
-      
+
       // Get the computed value - prefer tempResult from observer
       let value = tempResult !== undefined ? tempResult : tempVariable._value
       console.log('  Final value:', value, 'type:', typeof value)
-      
+
       // Check for errors
       if (tempError) {
         tempVariable.delete()
@@ -776,24 +793,25 @@ function DataAnalysisAgent() {
         console.error('  Evaluation error:', tempError)
         return { status: 'error', error: tempError.toString() }
       }
-      
+
       // Delete the temporary node
       tempVariable.delete()
       nodes.delete(tempName)
-      
+
       // Handle undefined value
       if (value === undefined) {
         console.log('  Value is undefined, might be async computation issue')
         return { status: 'error', error: 'Evaluation returned undefined - the data functions may not be available yet' }
       }
-      
+
       // Check if result is too large
       try {
         const serialized = JSON.stringify(value)
         if (serialized && serialized.length > 2000) {
           return {
             status: 'error',
-            error: 'Result too large (> 2000 characters). Please refine your query or stringify manually with a prefix.'
+            error:
+              'Result too large (> 2000 characters). Please refine your query or stringify manually with a prefix.',
           }
         }
       } catch (serializeError) {
@@ -801,21 +819,20 @@ function DataAnalysisAgent() {
         console.error('  Value that failed to serialize:', value)
         return { status: 'error', error: `Cannot serialize result: ${serializeError.message}` }
       }
-      
+
       console.log('  Evaluation successful')
       return { status: 'success', value }
-      
     } catch (error) {
       console.error('  Evaluation error:', error)
       return { status: 'error', error: error.toString() }
     }
   }
-  
+
   // Process messages for tool calls
   useEffect(() => {
     const lastMessage = messages[messages.length - 1]
     if (!lastMessage || lastMessage.role !== 'assistant') return
-    
+
     lastMessage.parts?.forEach(async (part) => {
       // Check for all tool types
       const toolMatch = part.type.match(/^tool-(.+)$/)
@@ -827,17 +844,17 @@ function DataAnalysisAgent() {
       }
     })
   }, [messages])
-  
+
   // Render artifacts
   useEffect(() => {
     if (!outputContainerRef.current || artifacts.length === 0) return
-    
+
     const currentArtifact = artifacts[currentArtifactIndex]
     if (!currentArtifact) return
-    
+
     const container = outputContainerRef.current
     container.innerHTML = ''
-    
+
     // Add artifact header
     const header = document.createElement('div')
     header.className = 'artifact-header'
@@ -846,7 +863,7 @@ function DataAnalysisAgent() {
       ${currentArtifact.description ? `<p>${currentArtifact.description}</p>` : ''}
     `
     container.appendChild(header)
-    
+
     // Render each node
     currentArtifact.nodes.forEach(({ nodeId, displayType }) => {
       const node = nodes.get(nodeId)
@@ -854,10 +871,10 @@ function DataAnalysisAgent() {
         console.warn(`Node ${nodeId} not found`)
         return
       }
-      
+
       const nodeContainer = document.createElement('div')
       nodeContainer.className = 'node-output'
-      
+
       let value
       try {
         value = node.variable?._value
@@ -870,7 +887,7 @@ function DataAnalysisAgent() {
         container.appendChild(nodeContainer)
         return
       }
-      
+
       if (displayType === 'plot' || (displayType === 'auto' && value?.tagName)) {
         // It's a plot (check if it's a DOM element)
         if (value && value.tagName) {
@@ -880,31 +897,31 @@ function DataAnalysisAgent() {
         // It's tabular data (array or Arquero table)
         const table = document.createElement('table')
         table.className = 'data-table'
-        
+
         // Convert Arquero table to array if needed
         let data = value
         if (value?._names && value.objects) {
           // It's an Arquero table, convert to array of objects
           data = value.objects()
         }
-        
+
         if (Array.isArray(data) && data.length > 0) {
           // Create header
           const thead = document.createElement('thead')
           const headerRow = document.createElement('tr')
-          Object.keys(data[0]).forEach(key => {
+          Object.keys(data[0]).forEach((key) => {
             const th = document.createElement('th')
             th.textContent = key
             headerRow.appendChild(th)
           })
           thead.appendChild(headerRow)
           table.appendChild(thead)
-          
+
           // Create body
           const tbody = document.createElement('tbody')
-          data.slice(0, 10).forEach(row => {
+          data.slice(0, 10).forEach((row) => {
             const tr = document.createElement('tr')
-            Object.values(row).forEach(val => {
+            Object.values(row).forEach((val) => {
               const td = document.createElement('td')
               td.textContent = val
               tr.appendChild(td)
@@ -922,13 +939,13 @@ function DataAnalysisAgent() {
           tr.appendChild(td)
           table.appendChild(tr)
         }
-        
+
         nodeContainer.appendChild(table)
       } else if (node.type === 'input' || node.type === 'input-view' || node.type === 'input-value') {
         // It's an input control - render the view node
         let elementToRender = null
         let nodeName = nodeId
-        
+
         if (node.type === 'input-value') {
           // For value nodes, get the corresponding view node
           const viewNode = nodes.get(`viewof ${nodeId}`)
@@ -944,30 +961,30 @@ function DataAnalysisAgent() {
           elementToRender = node.element
           nodeName = nodeId.replace('viewof ', '')
         }
-        
+
         if (elementToRender) {
           const label = document.createElement('label')
           label.textContent = nodeName + ': '
-          
+
           // Clone the element to avoid React issues, but manually sync changes
           const clonedElement = elementToRender.cloneNode(true)
-          
+
           // Set up manual synchronization - just update the original element
           const syncValue = (e) => {
             // Update the original element's value
             elementToRender.value = e.target.value
-            
+
             // Try dispatching both input and change events
             // Observable might be listening to either one
             const inputEvent = new Event('input', { bubbles: true })
             const changeEvent = new Event('change', { bubbles: true })
-            
+
             elementToRender.dispatchEvent(inputEvent)
             elementToRender.dispatchEvent(changeEvent)
-            
+
             console.log(`Input ${nodeName} changed to:`, e.target.value)
             console.log(`Dispatched input and change events on original element`)
-            
+
             // Debug: Check the value after a short delay
             setTimeout(() => {
               const valueNode = nodes.get(nodeName)
@@ -976,11 +993,11 @@ function DataAnalysisAgent() {
               console.log(`Variable version:`, valueNode?.variable?._version)
             }, 100)
           }
-          
+
           // Add event listener to the cloned element
           clonedElement.addEventListener('change', syncValue)
           clonedElement.addEventListener('input', syncValue)
-          
+
           label.appendChild(clonedElement)
           nodeContainer.appendChild(label)
         }
@@ -990,64 +1007,64 @@ function DataAnalysisAgent() {
         pre.textContent = JSON.stringify(value, null, 2)
         nodeContainer.appendChild(pre)
       }
-      
+
       container.appendChild(nodeContainer)
     })
-  }, [artifacts, currentArtifactIndex, nodes, nodeUpdateTrigger])  // Added nodeUpdateTrigger
-  
+  }, [artifacts, currentArtifactIndex, nodes, nodeUpdateTrigger]) // Added nodeUpdateTrigger
+
   return (
-    <div className="data-analysis-agent">
-      <div className="agent-header">
+    <div className='data-analysis-agent'>
+      <div className='agent-header'>
         <h1>📊 Data Analysis Agent</h1>
         <p>Interactive data analysis with Observable runtime</p>
       </div>
-      
-      <div className="agent-content">
-        <div className="chat-section">
-          <div className="messages-container">
+
+      <div className='agent-content'>
+        <div className='chat-section'>
+          <div className='messages-container'>
             {messages.length === 0 && (
-              <div className="welcome-message">
+              <div className='welcome-message'>
                 <p>👋 Hello! I'm your data analysis assistant.</p>
                 <p>I have access to various datasets and can help you analyze them interactively.</p>
                 <p>Try asking me to explore the website visitor data or product sales!</p>
               </div>
             )}
-            
+
             {messages.map((message) => (
               <div
                 key={message.id}
                 className={`message ${message.role === 'user' ? 'user-message' : 'assistant-message'}`}
               >
-                <div className="message-role">
+                <div className='message-role'>
                   {message.role === 'user' ? '👤 You' : '🤖 Agent'}
                 </div>
-                <div className="message-content">
+                <div className='message-content'>
                   {message.parts.map((part, index) => {
                     if (part.type === 'text') {
                       return <span key={index}>{part.text}</span>
                     }
-                    
+
                     const toolMatch = part.type.match(/^tool-(.+)$/)
                     if (toolMatch) {
                       return (
-                        <div key={index} className="tool-status">
-                          <div className="tool-header">
+                        <div key={index} className='tool-status'>
+                          <div className='tool-header'>
                             🔧 {toolMatch[1]} - {part.state}
                           </div>
                         </div>
                       )
                     }
-                    
+
                     return null
                   })}
                 </div>
               </div>
             ))}
-            
+
             {status === 'generating' && (
-              <div className="message assistant-message">
-                <div className="message-role">🤖 Agent</div>
-                <div className="message-content typing">
+              <div className='message assistant-message'>
+                <div className='message-role'>🤖 Agent</div>
+                <div className='message-content typing'>
                   <span></span>
                   <span></span>
                   <span></span>
@@ -1055,55 +1072,58 @@ function DataAnalysisAgent() {
               </div>
             )}
           </div>
-          
-          <form onSubmit={(e) => {
-            e.preventDefault()
-            if (input.trim()) {
-              sendMessage({
-                parts: [{ type: 'text', text: input }],
-              })
-              setInput('')
-            }
-          }} className="chat-form">
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (input.trim()) {
+                sendMessage({
+                  parts: [{ type: 'text', text: input }],
+                })
+                setInput('')
+              }
+            }}
+            className='chat-form'
+          >
             <input
-              type="text"
+              type='text'
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask me to analyze data..."
-              className="chat-input"
+              placeholder='Ask me to analyze data...'
+              className='chat-input'
               disabled={status !== 'ready'}
             />
             <button
-              type="submit"
+              type='submit'
               disabled={status !== 'ready' || !input.trim()}
-              className="send-button"
+              className='send-button'
             >
               {status === 'generating' ? 'Analyzing...' : 'Send'}
             </button>
           </form>
         </div>
-        
-        <div className="output-section">
-          <div className="artifact-navigation">
-            <button 
+
+        <div className='output-section'>
+          <div className='artifact-navigation'>
+            <button
               onClick={() => setCurrentArtifactIndex(Math.max(0, currentArtifactIndex - 1))}
               disabled={currentArtifactIndex === 0}
-              className="nav-button"
+              className='nav-button'
             >
               ← Previous
             </button>
-            <span className="artifact-counter">
+            <span className='artifact-counter'>
               {artifacts.length > 0 ? `${currentArtifactIndex + 1} / ${artifacts.length}` : 'No artifacts'}
             </span>
-            <button 
+            <button
               onClick={() => setCurrentArtifactIndex(Math.min(artifacts.length - 1, currentArtifactIndex + 1))}
               disabled={currentArtifactIndex >= artifacts.length - 1}
-              className="nav-button"
+              className='nav-button'
             >
               Next →
             </button>
           </div>
-          <div ref={outputContainerRef} className="output-container">
+          <div ref={outputContainerRef} className='output-container'>
             {/* Artifacts will be rendered here */}
           </div>
         </div>

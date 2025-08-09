@@ -21,6 +21,7 @@ A React application demonstrating data visualization with Observable Plot and AI
 ### Features
 
 #### 1. AI Plot Teacher (`/src/AIPlotTeacher.jsx`) - DEFAULT PAGE
+
 - **Purpose**: Interactive AI teacher that generates data visualizations on demand
 - **Components**:
   - `AIPlotTeacher.jsx` - Main component with tool execution
@@ -41,6 +42,7 @@ A React application demonstrating data visualization with Observable Plot and AI
   - Tool definition without server-side execution
 
 #### 2. Observable Plot Demo (`/src/ObservableDemo.jsx`)
+
 - **Purpose**: Demonstrates data visualization capabilities
 - **Components**:
   - `ObservableDemo.jsx` - Main component with charts
@@ -54,6 +56,7 @@ A React application demonstrating data visualization with Observable Plot and AI
 - **Libraries**: Uses Observable Plot and Arquero for data manipulation
 
 #### 3. AI Chat (`/src/ChatPage.jsx`)
+
 - **Purpose**: Chat interface with Claude Sonnet
 - **Components**:
   - `ChatPage.jsx` - Chat UI component
@@ -68,6 +71,7 @@ A React application demonstrating data visualization with Observable Plot and AI
 ### Server Architecture
 
 **Express Server (`server.js`)**:
+
 - Runs on port 3001
 - Endpoints:
   - `POST /api/chat` - Basic chat endpoint
@@ -79,6 +83,7 @@ A React application demonstrating data visualization with Observable Plot and AI
 ### Tool Calling Architecture (AI Plot Teacher)
 
 **How it works**:
+
 1. Server defines `draw_plot` tool without execution function
 2. Tool calls are streamed to client with input parameters
 3. Client intercepts tool calls and executes code locally
@@ -110,6 +115,7 @@ A React application demonstrating data visualization with Observable Plot and AI
 ## Dependencies
 
 ### Main Libraries
+
 - React 19.0.0-rc.1
 - Vite 7.1.0
 - Express 5.1.0

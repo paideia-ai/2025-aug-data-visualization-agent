@@ -1,7 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import { anthropic } from '@ai-sdk/anthropic'
-import { streamText, convertToModelMessages, tool } from 'ai'
+import { convertToModelMessages, streamText, tool } from 'ai'
 import { z } from 'zod'
 
 const app = express()
@@ -26,7 +26,8 @@ app.post('/api/chat', async (req, res) => {
 })
 
 // System prompt for the plot teacher
-const PLOT_TEACHER_SYSTEM_PROMPT = `You are an expert data visualization teacher specializing in Observable Plot and Arquero. Your role is to teach students how to create beautiful, informative visualizations by generating example code.
+const PLOT_TEACHER_SYSTEM_PROMPT =
+  `You are an expert data visualization teacher specializing in Observable Plot and Arquero. Your role is to teach students how to create beautiful, informative visualizations by generating example code.
 
 IMPORTANT INSTRUCTIONS:
 1. When asked to create a visualization, ALWAYS use the draw_plot tool to render it
@@ -137,9 +138,9 @@ app.post('/api/plot-teacher', async (req, res) => {
   try {
     const { messages } = req.body
     console.log('📊 Plot teacher received messages:', messages.length)
-    
+
     // Log the last user message
-    const lastUserMessage = messages.filter(m => m.role === 'user').pop()
+    const lastUserMessage = messages.filter((m) => m.role === 'user').pop()
     if (lastUserMessage) {
       console.log('Last user message:', lastUserMessage.parts?.[0]?.text || lastUserMessage)
     }
@@ -153,7 +154,9 @@ app.post('/api/plot-teacher', async (req, res) => {
         draw_plot: tool({
           description: 'Draw a data visualization plot using Observable Plot and Arquero',
           inputSchema: z.object({
-            code: z.string().describe('JavaScript code that creates a plot using Observable Plot. The code has access to Plot, aq, and d3.csv. It should create synthetic data and return a plot.')
+            code: z.string().describe(
+              'JavaScript code that creates a plot using Observable Plot. The code has access to Plot, aq, and d3.csv. It should create synthetic data and return a plot.',
+            ),
           }),
           outputSchema: z.string(),
           // No execute function - will be handled on client
@@ -169,12 +172,15 @@ app.post('/api/plot-teacher', async (req, res) => {
         console.log('✅ Generation finished')
         console.log('Tool calls made:', result.toolCalls?.length || 0)
         if (result.toolCalls?.length > 0) {
-          console.log('Tool details:', result.toolCalls.map(t => ({
-            name: t.toolName,
-            hasArgs: !!t.args
-          })))
+          console.log(
+            'Tool details:',
+            result.toolCalls.map((t) => ({
+              name: t.toolName,
+              hasArgs: !!t.args,
+            })),
+          )
         }
-      }
+      },
     })
 
     console.log('📤 Streaming response for plot teacher')
@@ -186,7 +192,8 @@ app.post('/api/plot-teacher', async (req, res) => {
 })
 
 // System prompt for the data analysis agent
-const DATA_AGENT_SYSTEM_PROMPT = `You are a data analyst assistant with access to an Observable runtime environment containing various pre-loaded datasets. Your role is to help users analyze and visualize data interactively.
+const DATA_AGENT_SYSTEM_PROMPT =
+  `You are a data analyst assistant with access to an Observable runtime environment containing various pre-loaded datasets. Your role is to help users analyze and visualize data interactively.
 
 AVAILABLE DATASETS (Query Methods):
 
@@ -306,16 +313,16 @@ app.post('/api/data-analysis-agent', async (req, res) => {
   try {
     const { messages } = req.body
     console.log('📊 Data analysis agent received messages:', messages.length)
-    
+
     // Log incoming messages with tool results
     console.log('📨 Incoming messages structure:')
     messages.forEach((msg, idx) => {
       if (msg.role === 'user') {
         console.log(`  Message ${idx}: User - "${msg.parts?.[0]?.text?.substring(0, 50)}..."`)
       } else if (msg.role === 'assistant') {
-        const toolParts = msg.parts?.filter(p => p.type?.startsWith('tool-'))
+        const toolParts = msg.parts?.filter((p) => p.type?.startsWith('tool-'))
         if (toolParts?.length > 0) {
-          toolParts.forEach(tp => {
+          toolParts.forEach((tp) => {
             const toolName = tp.type.replace('tool-', '')
             console.log(`  Message ${idx}: Assistant Tool Call - ${toolName}`)
             if (tp.input) {
@@ -328,7 +335,7 @@ app.post('/api/data-analysis-agent', async (req, res) => {
         }
       }
     })
-    
+
     const result = streamText({
       model: anthropic('claude-sonnet-4-20250514'),
       system: DATA_AGENT_SYSTEM_PROMPT,
@@ -338,37 +345,40 @@ app.post('/api/data-analysis-agent', async (req, res) => {
         list_nodes: tool({
           description: 'List all nodes in the Observable runtime environment',
           inputSchema: z.object({
-            type: z.enum(['all', 'data', 'plot', 'input']).optional().describe('Filter nodes by type')
+            type: z.enum(['all', 'data', 'plot', 'input']).optional().describe('Filter nodes by type'),
           }),
           outputSchema: z.object({
             nodes: z.array(z.object({
               name: z.string(),
               type: z.string(),
-              inputs: z.array(z.string())
-            }))
-          })
+              inputs: z.array(z.string()),
+            })),
+          }),
         }),
-        
+
         inspect_node: tool({
           description: 'Inspect the current value and type of a specific node',
           inputSchema: z.object({
-            name: z.string().describe('Name of the node to inspect')
+            name: z.string().describe('Name of the node to inspect'),
           }),
           outputSchema: z.object({
             name: z.string(),
             value: z.any().optional(),
             type: z.string(),
             shape: z.any().optional(),
-            error: z.string().optional()
-          })
+            error: z.string().optional(),
+          }),
         }),
-        
+
         define_node: tool({
-          description: 'Define a new reactive node in the Observable runtime. Code must include explicit return statement. If node exists, it will be redefined. Returns computed value preview or error for debugging.',
+          description:
+            'Define a new reactive node in the Observable runtime. Code must include explicit return statement. If node exists, it will be redefined. Returns computed value preview or error for debugging.',
           inputSchema: z.object({
             name: z.string().describe('Name for the new node'),
             inputs: z.array(z.string()).describe('Names of input nodes this depends on'),
-            code: z.string().describe('JavaScript function body with explicit return. Example: "const data = getData(); return data.slice(0, 5);"')
+            code: z.string().describe(
+              'JavaScript function body with explicit return. Example: "const data = getData(); return data.slice(0, 5);"',
+            ),
           }),
           outputSchema: z.object({
             nodeId: z.string(),
@@ -376,21 +386,21 @@ app.post('/api/data-analysis-agent', async (req, res) => {
             valueType: z.string().optional(),
             preview: z.string().optional(),
             wasRedefined: z.boolean().optional(),
-            error: z.string().optional()
-          })
+            error: z.string().optional(),
+          }),
         }),
-        
+
         delete_node: tool({
           description: 'Delete a node from the Observable runtime',
           inputSchema: z.object({
-            name: z.string().describe('Name of the node to delete')
+            name: z.string().describe('Name of the node to delete'),
           }),
           outputSchema: z.object({
             status: z.enum(['success', 'error']),
-            error: z.string().optional()
-          })
+            error: z.string().optional(),
+          }),
         }),
-        
+
         define_input: tool({
           description: 'Create an interactive input control',
           inputSchema: z.object({
@@ -401,62 +411,64 @@ app.post('/api/data-analysis-agent', async (req, res) => {
               max: z.number().optional(),
               step: z.number().optional(),
               options: z.array(z.string()).optional(),
-              defaultValue: z.any().optional()
-            }).describe('Configuration for the input control')
+              defaultValue: z.any().optional(),
+            }).describe('Configuration for the input control'),
           }),
           outputSchema: z.object({
             nodeId: z.string(),
-            initialValue: z.any()
-          })
+            initialValue: z.any(),
+          }),
         }),
-        
+
         create_artifact: tool({
           description: 'Create a display container for showing results to the user',
           inputSchema: z.object({
             id: z.string().describe('Unique identifier for the artifact'),
             title: z.string().describe('Title for the artifact display'),
-            description: z.string().optional().describe('Description of what this artifact shows')
+            description: z.string().optional().describe('Description of what this artifact shows'),
           }),
           outputSchema: z.object({
-            artifactId: z.string()
-          })
+            artifactId: z.string(),
+          }),
         }),
-        
+
         add_to_artifact: tool({
           description: 'Add a node to an artifact for display',
           inputSchema: z.object({
             artifactId: z.string().describe('ID of the artifact'),
             nodeId: z.string().describe('ID of the node to display'),
-            displayType: z.enum(['auto', 'table', 'raw', 'plot']).optional().describe('How to display the node')
+            displayType: z.enum(['auto', 'table', 'raw', 'plot']).optional().describe('How to display the node'),
           }),
           outputSchema: z.object({
-            status: z.enum(['success', 'error'])
-          })
+            status: z.enum(['success', 'error']),
+          }),
         }),
-        
+
         remove_from_artifact: tool({
           description: 'Remove a node from an artifact display',
           inputSchema: z.object({
             artifactId: z.string().describe('ID of the artifact'),
-            nodeId: z.string().describe('ID of the node to remove')
+            nodeId: z.string().describe('ID of the node to remove'),
           }),
           outputSchema: z.object({
-            status: z.enum(['success', 'error'])
-          })
+            status: z.enum(['success', 'error']),
+          }),
         }),
-        
+
         evaluate: tool({
           description: 'Evaluate JavaScript code and return the result. Code must include explicit return statement.',
           inputSchema: z.object({
-            code: z.string().describe('JavaScript function body with explicit return. Example: "const result = getVisitorCountByHourRange(0, 5); return result;"')
+            code: z.string().describe(
+              'JavaScript function body with explicit return. Example: "const result = getVisitorCountByHourRange(0, 5); return result;"',
+            ),
           }),
           outputSchema: z.object({
             status: z.enum(['success', 'error']),
             value: z.any().optional(),
-            error: z.string().optional()
-          })
-        })
-      }
+            error: z.string().optional(),
+          }),
+        }),
+      },
     })
 
     console.log('📤 Streaming response for data analysis agent')

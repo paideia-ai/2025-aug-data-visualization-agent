@@ -7,6 +7,7 @@ The Observable runtime implements a reactive programming model where variables a
 ## The Lazy Evaluation Problem
 
 ### Issue
+
 Variables defined in Observable runtime don't automatically compute their values. The `_value` property remains `undefined` until the variable is observed or explicitly computed.
 
 ```javascript
@@ -19,6 +20,7 @@ console.log(myVar._value) // undefined! The function hasn't been computed yet
 ```
 
 ### Why This Happens
+
 Observable runtime is designed for efficiency - it only computes values that are being observed or needed by other observed variables. This prevents unnecessary computation in large reactive programs.
 
 ## Solutions
@@ -30,9 +32,15 @@ Variables with observers are automatically computed:
 ```javascript
 // Create an observer
 const observer = {
-  pending() { console.log('Computing...') },
-  fulfilled(value) { console.log('Got value:', value) },
-  rejected(error) { console.error('Error:', error) }
+  pending() {
+    console.log('Computing...')
+  },
+  fulfilled(value) {
+    console.log('Got value:', value)
+  },
+  rejected(error) {
+    console.error('Error:', error)
+  },
 }
 
 // Define variable WITH an observer
@@ -72,7 +80,7 @@ const tempVar = module.variable(observer).define(
   (dataFunction1, dataFunction2) => {
     // These functions are passed as computed values
     return dataFunction1(args)
-  }
+  },
 )
 
 // The dependencies will be computed and passed to your function
@@ -90,8 +98,10 @@ const module = runtime.module()
 
 // Simple observer for debugging
 const observer = {
-  fulfilled(value) { /* value is computed */ },
-  rejected(error) { console.error(error) }
+  fulfilled(value) {/* value is computed */},
+  rejected(error) {
+    console.error(error)
+  },
 }
 
 // Define data functions with observers
@@ -112,11 +122,11 @@ const evalNode = module.variable(observer).define(
   (dependency1, dependency2) => {
     // Create context with dependencies
     const context = { dependency1, dependency2 }
-    
+
     // Evaluate user code with context
     const func = new Function(...Object.keys(context), `return (${userCode})`)
     return func(...Object.values(context))
-  }
+  },
 )
 
 // Force computation if needed
@@ -140,7 +150,7 @@ const plotObserver = {
     if (plot?.tagName) {
       container.appendChild(plot)
     }
-  }
+  },
 }
 
 const plotVar = module.variable(plotObserver).define(
@@ -148,9 +158,9 @@ const plotVar = module.variable(plotObserver).define(
   ['dataSource'], // Will recompute when dataSource changes
   (dataSource) => {
     return Plot.plot({
-      marks: [Plot.line(dataSource, {x: 'x', y: 'y'})]
+      marks: [Plot.line(dataSource, { x: 'x', y: 'y' })],
     })
-  }
+  },
 )
 ```
 
@@ -165,6 +175,7 @@ const plotVar = module.variable(plotObserver).define(
 ## Common Pitfalls
 
 ### Pitfall 1: Expecting Immediate Values
+
 ```javascript
 // WRONG: Value not computed yet
 const myVar = module.define('test', [], () => 42)
@@ -177,6 +188,7 @@ await runtime._compute()
 ```
 
 ### Pitfall 2: Not Declaring Dependencies
+
 ```javascript
 // WRONG: Won't have access to otherVar
 module.define('myVar', [], () => {
@@ -190,6 +202,7 @@ module.define('myVar', ['otherVar'], (otherVar) => {
 ```
 
 ### Pitfall 3: Forgetting to Clean Up Temporary Nodes
+
 ```javascript
 // Always delete temporary nodes after use
 const tempNode = module.define('temp', ...)

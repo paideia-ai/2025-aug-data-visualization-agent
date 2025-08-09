@@ -1,0 +1,34 @@
+{
+  "tasks": {
+    "dev": "deno run -A npm:vite",
+    "server": "deno run -A --watch server.js",
+    "build": "deno run -A npm:vite build",
+    "preview": "deno run -A npm:vite preview"
+  },
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react"
+  },
+  "imports": {
+    "react": "npm:react@19.0.0-rc.1",
+    "react-dom": "npm:react-dom@19.0.0-rc.1",
+    "@ai-sdk/anthropic": "npm:@ai-sdk/anthropic@^2.0.1",
+    "@ai-sdk/react": "npm:@ai-sdk/react@^2.0.8",
+    "@observablehq/plot": "npm:@observablehq/plot@^0.6.17",
+    "@observablehq/runtime": "npm:@observablehq/runtime@^6.0.0",
+    "@observablehq/stdlib": "npm:@observablehq/stdlib@^5.8.8",
+    "@vitejs/plugin-react": "npm:@vitejs/plugin-react@^5.0.0",
+    "ai": "npm:ai@^5.0.8",
+    "arquero": "npm:arquero@^8.0.3",
+    "cors": "npm:cors@^2.8.5",
+    "d3-fetch": "npm:d3-fetch@^3.0.1",
+    "express": "npm:express@^5.1.0",
+    "vite": "npm:vite@^7.1.0",
+    "zod": "npm:zod@^4.0.15"
+  },
+  "exclude": [
+    "node_modules",
+    "vendor",
+    "dist"
+  ]
+}

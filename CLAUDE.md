@@ -13,18 +13,29 @@ A React application demonstrating data visualization with Observable Plot and AI
 
 ## Common Development Commands
 
+**This project exclusively uses Deno runtime.**
+
 ```bash
 # Install dependencies
-pnpm install
+deno install
 
 # Start development server (frontend on port 5173)
-pnpm run dev
+deno task dev
 
-# Start backend server (API on port 3001)
-pnpm run server
+# Start backend server with watch mode (API on port 3001)
+deno task server
 
 # Build for production
-pnpm run build
+deno task build
+
+# Preview production build
+deno task preview
+
+# Format code (auto-runs in pre-commit hook)
+deno fmt
+
+# Lint code
+deno lint
 ```
 
 ## Architecture
@@ -59,14 +70,18 @@ The Observable runtime uses lazy evaluation - variables only compute when observ
 
 ## Tech Stack
 
-- **React** 19.0.0-rc.1 with React Router
+- **React** 19.0.0
 - **Vite** 7.1.0 for build tooling
 - **Observable Plot** 0.6.17 for visualizations
 - **Arquero** 8.0.3 for data manipulation
-- **AI SDK** 5.0.8 with Anthropic provider
+- **AI SDK** 5.0.8 with Anthropic provider 2.0.1
 - **Express** 5.1.0 for backend server
+- **Deno** 2.x runtime with TypeScript 5.8.3
 
 ## Environment Requirements
 
-- `ANTHROPIC_API_KEY` environment variable required for AI features
-- Node.js with pnpm package manager
+- **Deno 2.x runtime** (required)
+- **API Keys**: Most AI provider API keys are typically already configured in the environment. Use `echo $ANTHROPIC_API_KEY` to verify if needed.
+- Git hooks configured for `deno fmt` and `deno task build` on pre-commit
+
+- upstream/, which is gitignored, contain useful big sdk/framework/library's clone, so you should search them when understanding latest api, or debug. if needed, you could also git clone repos there yourself. prefer this over web search

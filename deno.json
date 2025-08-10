@@ -16,9 +16,7 @@
     "indentWidth": 2,
     "proseWrap": "preserve"
   },
-  "exclude": [
-    "node_modules",
-    "vendor",
-    "dist"
+  "links": [
+    "../d3-require"
   ]
 }

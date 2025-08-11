@@ -6,9 +6,11 @@ import * as aq from 'arquero'
 import { Runtime } from '@observablehq/runtime'
 import { Library } from '@observablehq/stdlib'
 import './DataAnalysisAgent.css'
+import scoresData from '../scores.json'
+import reportsData from '../reports.json'
 
 function DataAnalysisAgent() {
-  const [input, setInput] = useState('show me website visitor data in a table format')
+  const [input, setInput] = useState('帮我看看两个团队的整体表现对比')
   const [runtime, setRuntime] = useState(null)
   const [library, setLibrary] = useState(null)
   const [mainModule, setMainModule] = useState(null)
@@ -92,108 +94,24 @@ function DataAnalysisAgent() {
 
     // Define initial data query methods WITH observers
     const initialNodes = {
-      // Website analytics data
-      getVisitorCountByHourRange: mod.variable(dataObserver).define('getVisitorCountByHourRange', [], () => {
-        return (hourStart, hourEnd) => {
-          const data = []
-          for (let hour = hourStart; hour <= Math.min(hourEnd, 23); hour++) {
-            // Simulate realistic traffic patterns with peaks at 10am and 3pm
-            const baseCount = 100
-            const peakMultiplier = hour === 10 || hour === 15 ? 2.5 : hour >= 9 && hour <= 17 ? 1.8 : 0.6
-            const randomVariation = Math.random() * 30 - 15
-            data.push({
-              hour,
-              visitors: Math.round(baseCount * peakMultiplier + randomVariation),
-              uniqueVisitors: Math.round((baseCount * peakMultiplier + randomVariation) * 0.7),
-              pageViews: Math.round((baseCount * peakMultiplier + randomVariation) * 3.5),
-            })
-          }
-          return data
+      // AI ability test scores data
+      getScores: mod.variable(dataObserver).define('getScores', [], () => {
+        return () => {
+          // Return a copy of the scores data to prevent mutations
+          return [...scoresData]
         }
       }),
 
-      // Product sales data
-      getProductSalesByCategory: mod.variable(dataObserver).define('getProductSalesByCategory', [], () => {
-        return (category = null) => {
-          const categories = ['Electronics', 'Clothing', 'Books', 'Home & Garden', 'Sports']
-          const products = {
-            'Electronics': ['Laptop', 'Phone', 'Tablet', 'Headphones', 'Camera'],
-            'Clothing': ['T-Shirt', 'Jeans', 'Dress', 'Jacket', 'Shoes'],
-            'Books': ['Fiction', 'Non-Fiction', 'Science', 'History', 'Art'],
-            'Home & Garden': ['Furniture', 'Decor', 'Tools', 'Plants', 'Kitchen'],
-            'Sports': ['Running Shoes', 'Yoga Mat', 'Weights', 'Bike', 'Tennis Racket'],
+      // Individual employee report data
+      getReport: mod.variable(dataObserver).define('getReport', [], () => {
+        return (email) => {
+          // Find the report by email
+          const report = reportsData.find((r) => r.email === email)
+          if (!report) {
+            throw new Error(`No report found for email: ${email}`)
           }
-
-          const data = []
-          const categoriesToProcess = category ? [category] : categories
-
-          for (const cat of categoriesToProcess) {
-            if (products[cat]) {
-              for (const product of products[cat]) {
-                data.push({
-                  category: cat,
-                  product,
-                  unitsSold: Math.floor(Math.random() * 500) + 50,
-                  revenue: Math.floor(Math.random() * 50000) + 5000,
-                  profit: Math.floor(Math.random() * 10000) + 1000,
-                  rating: (Math.random() * 2 + 3).toFixed(1),
-                })
-              }
-            }
-          }
-          return data
-        }
-      }),
-
-      // Customer demographics data
-      getCustomerDemographics: mod.variable(dataObserver).define('getCustomerDemographics', [], () => {
-        return (ageMin = 18, ageMax = 65) => {
-          const data = []
-          const segments = ['Budget', 'Standard', 'Premium']
-          const regions = ['North', 'South', 'East', 'West', 'Central']
-
-          for (let age = ageMin; age <= ageMax; age += 5) {
-            for (const segment of segments) {
-              for (const region of regions) {
-                const count = Math.floor(Math.random() * 100) + 20
-                data.push({
-                  ageGroup: `${age}-${age + 4}`,
-                  segment,
-                  region,
-                  customerCount: count,
-                  avgSpending: Math.floor(Math.random() * 500) + 100,
-                  retentionRate: (Math.random() * 40 + 60).toFixed(1),
-                })
-              }
-            }
-          }
-          return data
-        }
-      }),
-
-      // Time series sales data
-      getMonthlySalesData: mod.variable(dataObserver).define('getMonthlySalesData', [], () => {
-        return (startMonth = 1, endMonth = 12, year = 2024) => {
-          const data = []
-          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-
-          for (let month = startMonth; month <= endMonth; month++) {
-            const baseSales = 100000
-            const seasonalMultiplier = month === 12 || month === 11 ? 1.5 : month >= 6 && month <= 8 ? 0.8 : 1.0
-            const trend = month * 2000 // Growing trend
-            const randomVariation = Math.random() * 20000 - 10000
-
-            data.push({
-              month: months[month - 1],
-              monthNumber: month,
-              year,
-              sales: Math.round(baseSales * seasonalMultiplier + trend + randomVariation),
-              orders: Math.floor(Math.random() * 2000) + 1000,
-              averageOrderValue: Math.floor(Math.random() * 100) + 50,
-              newCustomers: Math.floor(Math.random() * 500) + 200,
-            })
-          }
-          return data
+          // Return a copy to prevent mutations
+          return JSON.parse(JSON.stringify(report))
         }
       }),
     }

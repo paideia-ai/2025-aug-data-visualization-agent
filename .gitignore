@@ -34,3 +34,7 @@ app/**/*.jsx.d.ts
 # React Router build output
 build/
 
+# Generated data files
+scores.json
+reports.json
+

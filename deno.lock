@@ -1,6 +1,14 @@
 {
   "version": "5",
   "specifiers": {
+    "jsr:@std/csv@*": "1.0.6",
+    "jsr:@std/csv@1.0.4": "1.0.4",
+    "jsr:@std/fs@1.0.8": "1.0.8",
+    "jsr:@std/internal@^1.0.9": "1.0.10",
+    "jsr:@std/path@*": "1.1.1",
+    "jsr:@std/path@^1.0.8": "1.1.1",
+    "jsr:@std/streams@^1.0.8": "1.0.10",
+    "jsr:@std/streams@^1.0.9": "1.0.10",
     "npm:@ai-sdk/anthropic@^2.0.1": "2.0.1_zod@3.25.76",
     "npm:@ai-sdk/react@^2.0.8": "2.0.8_react@19.1.1_zod@3.25.76",
     "npm:@observablehq/plot@~0.6.17": "0.6.17",
@@ -18,6 +26,38 @@
     "npm:rollup-plugin-node-externals@^8.0.1": "8.0.1_rollup@4.46.2",
     "npm:vite@^7.1.0": "7.1.1_picomatch@4.0.3",
     "npm:zod@^3.25.0": "3.25.76"
+  },
+  "jsr": {
+    "@std/csv@1.0.4": {
+      "integrity": "aa351de654b10b8a407275b61f588863b9538027fd47aed90dd9e7f54ab5bdc0",
+      "dependencies": [
+        "jsr:@std/streams@^1.0.8"
+      ]
+    },
+    "@std/csv@1.0.6": {
+      "integrity": "52ef0e62799a0028d278fa04762f17f9bd263fad9a8e7f98c14fbd371d62d9fd",
+      "dependencies": [
+        "jsr:@std/streams@^1.0.9"
+      ]
+    },
+    "@std/fs@1.0.8": {
+      "integrity": "161c721b6f9400b8100a851b6f4061431c538b204bb76c501d02c508995cffe0",
+      "dependencies": [
+        "jsr:@std/path@^1.0.8"
+      ]
+    },
+    "@std/internal@1.0.10": {
+      "integrity": "e3be62ce42cab0e177c27698e5d9800122f67b766a0bea6ca4867886cbde8cf7"
+    },
+    "@std/path@1.1.1": {
+      "integrity": "fe00026bd3a7e6a27f73709b83c607798be40e20c81dde655ce34052fd82ec76",
+      "dependencies": [
+        "jsr:@std/internal"
+      ]
+    },
+    "@std/streams@1.0.10": {
+      "integrity": "75c0b1431873cd0d8b3d679015220204d36d3c7420d93b60acfc379eb0dc30af"
+    }
   },
   "npm": {
     "@ai-sdk/anthropic@2.0.1_zod@3.25.76": {

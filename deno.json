@@ -3,7 +3,8 @@
     "dev": "deno run -A npm:@react-router/dev dev --config vite.dev.ts",
     "build": "deno run -A npm:@react-router/dev build --config vite.build.ts",
     "preview": "deno run -A npm:vite preview",
-    "typecheck": "deno run -A npm:typescript --noEmit"
+    "typecheck": "deno run -A npm:typescript --noEmit",
+    "bundle-data": "deno run --allow-read --allow-write scripts/convert-scores.ts && deno run --allow-read --allow-write scripts/convert-reports.ts"
   },
   "compilerOptions": {
     "jsx": "react-jsx",

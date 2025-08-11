@@ -4,12 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A React application demonstrating data visualization with Observable Plot and AI-powered chat features using Anthropic's Claude. The app has multiple modes:
+A React application for interactive data analysis and visualization using Observable Plot and Anthropic's Claude.
 
-- **Data Analysis Agent**: Interactive data analysis with Observable runtime
-- **AI Plot Teacher**: Generates data visualizations on demand with tool-based approach
-- **Observable Plot Demo**: Static dashboard with various charts
-- **AI Chat**: Basic chat interface with Claude
+- **Data Analysis Agent**: Interactive data analysis with Observable runtime, pre-loaded datasets, and AI-powered assistance
+  - System prompt location: `/app/ai/config.ts:11-104`
 
 ## Common Development Commands
 
@@ -22,8 +20,6 @@ deno install
 # Start development server (frontend on port 5173)
 deno task dev
 
-# Start backend server with watch mode (API on port 3001)
-deno task server
 
 # Build for production
 deno task build
@@ -43,21 +39,12 @@ deno lint
 ### Frontend-Backend Split
 
 - **Frontend**: React app on port 5173 (Vite dev server)
-- **Backend**: Express server on port 3001 (handles AI API calls)
+- **Backend**: API routes handled by React Router framework mode
 - **Proxy**: Vite proxies `/api` requests to backend
 
 ### Key API Endpoints
 
-- `POST /api/chat` - Basic chat with Claude Sonnet
-- `POST /api/plot-teacher` - Plot generation with `draw_plot` tool (client-side execution)
 - `POST /api/data-analysis-agent` - Data analysis with Observable runtime tools
-
-### Tool Execution Pattern (AI Plot Teacher)
-
-1. Server defines tools without execution functions
-2. Tool calls stream to client with parameters
-3. Client intercepts and executes code in sandboxed iframe
-4. Results sent back as tool outputs
 
 ### Observable Runtime Pattern
 
@@ -68,6 +55,31 @@ The Observable runtime uses lazy evaluation - variables only compute when observ
 - Declare dependencies explicitly in define() calls
 - See `docs/observable-runtime-patterns.md` for detailed patterns
 
+### Pre-loaded Sample Data Functions
+
+Sample data generators are defined in `/src/DataAnalysisAgent.jsx:96-198`. Available functions:
+
+1. **getVisitorCountByHourRange(hourStart, hourEnd)**
+   - Website visitor analytics for specified hour range (0-23)
+   - Returns: Array of `{hour, visitors, uniqueVisitors, pageViews}`
+   - Traffic peaks at 10am and 3pm
+
+2. **getProductSalesByCategory(category)**
+   - Product sales data, optionally filtered by category
+   - Categories: 'Electronics', 'Clothing', 'Books', 'Home & Garden', 'Sports'
+   - Returns: Array of `{category, product, unitsSold, revenue, profit, rating}`
+
+3. **getCustomerDemographics(ageMin, ageMax)**
+   - Customer demographic data for age range
+   - Returns: Array of `{ageGroup, segment, region, customerCount, avgSpending, retentionRate}`
+   - Segments: 'Budget', 'Standard', 'Premium'
+   - Regions: 'North', 'South', 'East', 'West', 'Central'
+
+4. **getMonthlySalesData(startMonth, endMonth, year)**
+   - Monthly sales time series data
+   - Returns: Array of `{month, monthNumber, year, sales, orders, averageOrderValue, newCustomers}`
+   - Includes seasonal variations (holiday peaks in Nov/Dec)
+
 ## Tech Stack
 
 - **React** 19.0.0
@@ -75,7 +87,6 @@ The Observable runtime uses lazy evaluation - variables only compute when observ
 - **Observable Plot** 0.6.17 for visualizations
 - **Arquero** 8.0.3 for data manipulation
 - **AI SDK** 5.0.8 with Anthropic provider 2.0.1
-- **Express** 5.1.0 for backend server
 - **Deno** 2.x runtime with TypeScript 5.8.3
 
 ## Environment Requirements
